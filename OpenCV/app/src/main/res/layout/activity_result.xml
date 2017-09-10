@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.example.vinicius.opencv.ResultActivity">
+
+    <ImageView
+        android:id="@+id/image_view_result"
+        android:layout_width="236dp"
+        android:layout_height="350dp"
+        tools:layout_editor_absoluteX="42dp"
+        tools:layout_editor_absoluteY="16dp"
+        android:layout_centerHorizontal="true" />
+
+    <TextView
+        android:id="@+id/textView"
+        android:layout_width="wrap_content"
+        android:layout_height="20dp"
+        android:text="Area da folha: "
+        tools:layout_editor_absoluteX="16dp"
+        tools:layout_editor_absoluteY="20dp"
+        android:layout_below="@+id/image_view_result"
+        android:layout_alignLeft="@+id/image_view_result"
+        android:layout_alignStart="@+id/image_view_result"
+        android:layout_marginTop="39dp" />
+
+    <TextView
+        android:id="@+id/areaTextView"
+        android:layout_width="91dp"
+        android:layout_height="20dp"
+        android:text=""
+        tools:layout_editor_absoluteX="152dp"
+        tools:layout_editor_absoluteY="394dp"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignTop="@+id/textView"
+        android:layout_toEndOf="@+id/textView" />
+
+
+
+
+</RelativeLayout>
