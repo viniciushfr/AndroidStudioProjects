@@ -73,7 +73,7 @@ public class MainActivity extends AppCompatActivity  {
                 AplicationData app = (AplicationData) getApplicationContext();
                 app.setBitmapToProcess(bitmap);
 
-                Intent intent = new Intent(MainActivity.this, ResultActivity.class);
+                Intent intent = new Intent(MainActivity.this, ConfigActivity.class);
                 startActivity(intent);
 
             } catch (IOException e) {
