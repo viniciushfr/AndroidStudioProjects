@@ -24,7 +24,7 @@ public class ResultActivity extends AppCompatActivity {
         Bitmap bitmap = app.getBitmapToProcess();
         ImageView imageViewResult = (ImageView)findViewById(R.id.image_view_result);
 
-        Leaf leaf = new Leaf(bitmap);
+        Leaf leaf = new Leaf(bitmap,app.getLeafColor());
         imageViewResult.setImageBitmap(leaf.process());
 
         TextView areaTextView  = (TextView)findViewById(R.id.areaTextView);

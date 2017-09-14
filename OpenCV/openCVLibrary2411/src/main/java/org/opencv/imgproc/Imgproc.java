@@ -6211,10 +6211,11 @@ public class Imgproc {
  * @param seedPoint Starting point.
  * @param newVal New value of the repainted domain pixels.
  *
+ * @param i
  * @see <a href="http://docs.opencv.org/modules/imgproc/doc/miscellaneous_transformations.html#floodfill">org.opencv.imgproc.Imgproc.floodFill</a>
  * @see org.opencv.imgproc.Imgproc#findContours
  */
-    public static int floodFill(Mat image, Mat mask, Point seedPoint, Scalar newVal)
+    public static int floodFill(Mat image, Mat mask, Point seedPoint, Scalar newVal, int i)
     {
 
         int retVal = floodFill_1(image.nativeObj, mask.nativeObj, seedPoint.x, seedPoint.y, newVal.val[0], newVal.val[1], newVal.val[2], newVal.val[3]);

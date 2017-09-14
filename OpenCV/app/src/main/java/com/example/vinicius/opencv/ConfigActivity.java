@@ -15,6 +15,16 @@ import android.widget.TextView;
 
 import com.example.vinicius.opencv.R;
 
+import org.opencv.android.Utils;
+import org.opencv.core.Core;
+import org.opencv.core.CvType;
+import org.opencv.core.Mat;
+import org.opencv.core.Point;
+import org.opencv.core.Rect;
+import org.opencv.core.Scalar;
+import org.opencv.core.Size;
+import org.opencv.imgproc.Imgproc;
+
 import java.util.ArrayList;
 
 public class ConfigActivity extends Activity implements OnTouchListener
@@ -30,6 +40,9 @@ public class ConfigActivity extends Activity implements OnTouchListener
     // These matrices will be used to scale points of the image
     Matrix matrix = new Matrix();
     Matrix savedMatrix = new Matrix();
+
+    Mat img = new Mat();
+    Bitmap bitmap;
 
     // The 3 states (events) which the user is trying to perform
     static final int NONE = 0;
@@ -50,7 +63,13 @@ public class ConfigActivity extends Activity implements OnTouchListener
         setContentView(R.layout.activity_config);
 
         AplicationData app = (AplicationData) getApplicationContext();
-        Bitmap bitmap = app.getBitmapToProcess();
+        bitmap = app.getBitmapToProcess();
+        Utils.bitmapToMat(bitmap,img);
+        Size sz = new Size(img.width()/10,img.height()/10);
+        Imgproc.resize(img,img,sz);
+        Mat imgHsl = new Mat();
+        //Imgproc.cvtColor(img,imgHsl,Imgproc.COLOR_RGB2HLS);
+        //Imgproc.cvtColor(imgHsl,img,Imgproc.COLOR_HLS2RGB);
         view = (ImageView)findViewById(R.id.image_view_config);
         diseaseColors = new ArrayList<>();
         leafColors = new ArrayList<>();
@@ -91,11 +110,18 @@ public class ConfigActivity extends Activity implements OnTouchListener
                     int pixel = bmap.getPixel((int)event.getX(),(int)event.getY());
 
                     //then do what you want with the pixel data, e.g
-                    int redValue = Color.red(pixel);
-                    int blueValue = Color.blue(pixel);
-                    int greenValue = Color.green(pixel);
+                    double[] color = new double[3];
+                    color[0] = Color.red(pixel);
+                    color[1] = Color.green(pixel);
+                    color[2] = Color.blue(pixel);
 
-                    System.out.println("rgb("+redValue + ", " +greenValue + ", " + blueValue+")");
+                    System.out.println("rgb("+color[0] + ", " +color[1] + ", " + color[2]+")");
+
+                    img = segmentByColor(img,color);
+                    Bitmap btm = Bitmap.createBitmap(img.cols(), img.rows(), Bitmap.Config.ARGB_8888);
+                    Utils.matToBitmap(img,btm);
+                    this.view.setImageBitmap(btm);
+
 
                 }
                 break;
@@ -174,6 +200,43 @@ public class ConfigActivity extends Activity implements OnTouchListener
         float x = event.getX(0) + event.getX(1);
         float y = event.getY(0) + event.getY(1);
         point.set(x / 2, y / 2);
+    }
+    private static Mat floodFill(Mat img)
+    {
+        Imgproc.cvtColor(img,img,Imgproc.COLOR_RGB2GRAY );
+        Mat floodfilled = Mat.zeros(img.rows() + 2, img.cols() + 2, CvType.CV_8U);
+        Imgproc.floodFill(img, floodfilled, new Point(0, 0), new Scalar(255), 4 );
+        /*
+        Core.subtract(floodfilled, Scalar.all(0), floodfilled);
+
+        Rect roi = new Rect(1, 1, img.cols() - 2, img.rows() - 2);
+        Mat temp = new Mat();
+
+        floodfilled.submat(roi).copyTo(temp);
+
+        img = temp;
+
+        //Core.bitwise_not(img, img);
+        */
+
+        return floodfilled;
+    }
+    private static Mat segmentByColor(Mat img,double[] color){
+        System.out.println("segmentando..");
+        for(int i=0;i<img.cols();i++){
+            for(int k=0;k<img.rows();k++){
+                double[] p = img.get(k,i);
+                //System.out.println("rgb("+p[0] + ", " +p[1] + ", " + p[2]+")");
+                if(color[0] == p[0] && color[1] == p[1] && color[2] == p[2]){
+                    System.out.println("cor==");
+                    p[0] = 0;
+                    p[1] = 0;
+                    p[2] = 0;
+                    img.put(k,i,p);
+                }
+            }
+        }
+        return img;
     }
 
     /** Show an event in the LogCat view, for debugging */

@@ -25,16 +25,21 @@ import java.util.List;
 
 public class Leaf {
     private Mat leaf;
+    private double[] leafColor;
+    private Mat originalImage;
     private double leafArea;
     private double leafWidth;
     private double leafHeight;
 
-    public Leaf(Bitmap image){
+    public Leaf(Bitmap image,double[] leafColor){
         this.leaf = new Mat();
         Utils.bitmapToMat(image,this.leaf);
+        this.leafColor = leafColor;
         this.leafArea = 0;
         this.leafHeight =0;
         this.leafWidth =0;
+        resize(leaf.width()/10,leaf.height()/10);
+        originalImage = leaf;
     }
 
     public double getLeafHeight() {
@@ -71,7 +76,7 @@ public class Leaf {
 
     public Bitmap process(){
         Bitmap.Config conf = Bitmap.Config.ARGB_8888;
-        resize(leaf.width()/10,leaf.height()/10);
+
 
 
         ArrayList<Mat> leafArray= this.splitIn4();
@@ -90,8 +95,8 @@ public class Leaf {
         leaf = concatSplitedLeaf(leafArray);
 
         Imgproc.medianBlur(leaf,leaf,3);
-        /*
 
+        /*
         List<MatOfPoint> contours = new ArrayList<>();
         Mat hieranchy = new Mat();
         Imgproc.findContours(leaf,contours,hieranchy, 1, 2 );
@@ -116,8 +121,11 @@ public class Leaf {
             System.out.println("Folha e referencia não indentificados");
         }
         */
-        Bitmap out =  Bitmap.createBitmap(leaf.width(), leaf.height(),conf);
-        Utils.matToBitmap(leaf,out);
+        originalImage = removeBackground(originalImage,leaf);
+
+        segmentByColor(leafColor,80);
+        Bitmap out =  Bitmap.createBitmap(originalImage.width(), originalImage.height(),conf);
+        Utils.matToBitmap(originalImage,out);
         return out;
     }
     public ArrayList<Mat> splitIn4 (){
@@ -146,6 +154,23 @@ public class Leaf {
         return f;
     }
 
+    private Mat removeBackground (Mat oimg, Mat simg){
+        for(int c=0;c<simg.cols();c++){
+            for(int r=0;r<simg.rows();r++){
+                double[] ps = simg.get(r,c);
+                //System.out.println("rgb("+p[0] + ", " +p[1] + ", " + p[2]+")");
+                if(ps[0] == 255){
+                    double[] p = new double[4];
+                    p[0]=0;
+                    p[1]=0;
+                    p[2]=0;
+                    p[3]=1;
+                    oimg.put(r,c,p);
+                }
+            }
+        }
+        return oimg;
+    }
     private int getNumBlackPixels(Mat l){
         int total =0;
         for(int c =0;c<l.cols() -1;c++){
@@ -159,6 +184,36 @@ public class Leaf {
         }
 
         return total;
+    }
+    public Bitmap segmentByColor(double[] color,int t){
+
+        Mat img = originalImage;
+
+        System.out.println("segmentando..");
+        for(int i=0;i<img.cols();i++){
+            for(int k=0;k<img.rows();k++){
+                double[] p = img.get(k,i);
+                //System.out.println("rgb("+p[0] + ", " +p[1] + ", " + p[2]+")");
+                if(Math.abs(color[0] - p[0]) <=t && Math.abs(color[1] - p[1]) <=t && Math.abs(color[2] - p[2]) <=t){
+                    System.out.println("f");
+                    p[0] = 0;
+                    p[1] = 255;
+                    p[2] = 0;
+
+                }else{
+                    System.out.println("d");
+                    p[0] = 255;
+                    p[1] = 0;
+                    p[2] = 0;
+
+                }
+                img.put(k,i,p);
+            }
+        }
+        Bitmap btm = Bitmap.createBitmap(img.cols(), img.rows(), Bitmap.Config.ARGB_8888);
+        Utils.matToBitmap(img,btm);
+        originalImage = img;
+        return btm;
     }
     private void resize(int w, int h){
         Size sz = new Size(w,h);
