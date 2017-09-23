@@ -123,7 +123,7 @@ public class Leaf {
         */
         originalImage = removeBackground(originalImage,leaf);
 
-        segmentByColor(leafColor,80);
+        //segmentByColor(leafColor,80);
         Bitmap out =  Bitmap.createBitmap(originalImage.width(), originalImage.height(),conf);
         Utils.matToBitmap(originalImage,out);
         return out;
