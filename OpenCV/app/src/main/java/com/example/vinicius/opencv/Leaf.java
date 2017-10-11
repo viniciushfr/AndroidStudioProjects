@@ -16,6 +16,7 @@ import org.opencv.imgproc.Moments;
 
 import java.sql.SQLOutput;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
@@ -25,13 +26,13 @@ import java.util.List;
 
 public class Leaf {
     private Mat leaf;
-    private double[] leafColor;
+    private float[] leafColor;
     private Mat originalImage;
     private double leafArea;
     private double leafWidth;
     private double leafHeight;
 
-    public Leaf(Bitmap image,double[] leafColor){
+    public Leaf(Bitmap image,float[] leafColor){
         this.leaf = new Mat();
         Utils.bitmapToMat(image,this.leaf);
         this.leafColor = leafColor;
@@ -121,12 +122,19 @@ public class Leaf {
             System.out.println("Folha e referencia não indentificados");
         }
         */
-        originalImage = removeBackground(originalImage,leaf);
-
-        //segmentByColor(leafColor,80);
+        if(leafColor!=null) {
+            long start = System.currentTimeMillis();
+            originalImage = removeBackground1(originalImage, leaf);
+            long elapsed = System.currentTimeMillis() - start;
+            System.out.println("tempo passado removebg:" +elapsed);
+            segmentByColor(leafColor, 20);
+        }else {
+            originalImage = leaf;
+        }
         Bitmap out =  Bitmap.createBitmap(originalImage.width(), originalImage.height(),conf);
         Utils.matToBitmap(originalImage,out);
-        return out;
+
+            return out;
     }
     public ArrayList<Mat> splitIn4 (){
         ArrayList<Mat> leafSplited = new ArrayList<Mat>();
@@ -154,7 +162,32 @@ public class Leaf {
         return f;
     }
 
+    private Mat removeBackground1 (Mat oimg, Mat simg){
+        byte[] buff_simg = new byte[(int) (simg.total() * simg.channels())];
+        simg.get(0, 0, buff_simg);
+        byte[] buff_oimg = new byte[(int) (oimg.total() * oimg.channels())];
+        oimg.get(0, 0, buff_oimg);
+        int index_oimg=0;
+        for(int i =0 ;i<buff_simg.length;i++){
+            //System.out.println((buff_simg[i] & 0xFF));
+            if(buff_simg[i] == (byte)255){
+                buff_oimg[index_oimg]=  (byte) 0;
+                buff_oimg[index_oimg+1]=(byte) 0;
+                buff_oimg[index_oimg+2]=(byte) 0;
+                buff_oimg[index_oimg+3]=(byte) 0;
+            }
+            index_oimg+=4;
+        }
+        oimg.put(0, 0, buff_oimg);
+        return oimg;
+    }
+    private Mat removeBackground2 (Mat oimg, Mat simg){
+        Mat res = new Mat();
+        Core.bitwise_and(oimg,simg,res);
+        return oimg;
+    }
     private Mat removeBackground (Mat oimg, Mat simg){
+        //Codigo usando opencv MAT
         for(int c=0;c<simg.cols();c++){
             for(int r=0;r<simg.rows();r++){
                 double[] ps = simg.get(r,c);
@@ -169,6 +202,7 @@ public class Leaf {
                 }
             }
         }
+
         return oimg;
     }
     private int getNumBlackPixels(Mat l){
@@ -178,42 +212,102 @@ public class Leaf {
                 double[] pixel= l.get(r,c);
                 if(pixel[0] == 0 ){
                     total++;
-
                 }
             }
         }
-
         return total;
     }
-    public Bitmap segmentByColor(double[] color,int t){
+    public Bitmap segmentByColor(float[] color,int t){
 
         Mat img = originalImage;
+        Mat hsv = new Mat();
+        Imgproc.cvtColor(img,hsv,Imgproc.COLOR_RGB2HSV_FULL);
+        for(int i=0;i<hsv.cols();i++){
+            for(int k=0;k<hsv.rows();k++){
+                double[] p = hsv.get(k,i);
+                //System.out.println("hsl("+p[0] + ", " +p[1] + ", " + p[2]+")");
+                if(p[0]> color[0]-t && p[0]<color[0]+t){
 
+                    p[0] = 0;
+                    p[1] = 255;
+                    p[2] = 0;
+
+                }else if(p[2]==0 && p[1]==0 && p[0]==0){
+                    p[0] = 255;
+                    p[1] = 255;
+                    p[2] = 255;
+
+                }else{
+                    p[0] = 255;
+                    p[1] = 0;
+                    p[2] = 0;
+                }
+                hsv.put(k,i,p);
+            }
+        }
+        Bitmap btm = Bitmap.createBitmap(hsv.cols(), hsv.rows(), Bitmap.Config.ARGB_8888);
+        Utils.matToBitmap(hsv,btm);
+        originalImage = hsv;
+        return btm;
+    }
+    public Bitmap segmentByColor1(float[] color, int t){
+        Mat img = originalImage;
+        Mat hsv = new Mat();
+        Imgproc.cvtColor(img,hsv,Imgproc.COLOR_RGB2HSV_FULL);
+        byte[] buff_img = new byte[(int) (hsv.total() * hsv.channels())];
+        hsv.get(0, 0, buff_img);
+
+
+        for(int i =0 ;i<buff_img.length;i+=3){
+            //System.out.println("hsl("+(buff_img[i] & 0xFF) + ", " +(buff_img[i+1]&0xFF) + ", " + (buff_img[i+2]&0xFF)+")");
+            if(buff_img[i] > (byte)color[0]-t && buff_img[i] < (byte)color[0]+t)
+            {
+               // System.out.println("v");
+                buff_img[i]=  (byte) 0;
+                buff_img[i+1]=(byte) 255;
+                buff_img[i+2]=(byte) 0;
+            }else if( buff_img[i] == (byte)0 && buff_img[i+1] ==(byte)0 && buff_img[i+2] ==(byte)0)
+            {
+               // System.out.println("r");
+                buff_img[i]=  (byte) 255;
+                buff_img[i+1]=(byte) 255;
+                buff_img[i+2]=(byte) 255;
+            }else{
+               // System.out.println("r");
+                buff_img[i]=  (byte) 255;
+                buff_img[i+1]=(byte) 0;
+                buff_img[i+2]=(byte) 0;
+            }
+        }
+
+        hsv.put(0,0,buff_img);
+        Bitmap btm = Bitmap.createBitmap(hsv.cols(), hsv.rows(), Bitmap.Config.ARGB_8888);
+        Utils.matToBitmap(hsv,btm);
+        originalImage = hsv;
+        return btm;
+    }
+    public Mat segmentByColor2(float[] color){
+        Mat img = originalImage;
+        Imgproc.cvtColor(img,img,Imgproc.COLOR_RGB2HSV);
+        int sensitivity = 15;
+        Core.inRange(img,new Scalar(60 - sensitivity, 100, 100), new Scalar(60 + sensitivity, 255, 255),img);
+        /*
         System.out.println("segmentando..");
         for(int i=0;i<img.cols();i++){
             for(int k=0;k<img.rows();k++){
                 double[] p = img.get(k,i);
                 //System.out.println("rgb("+p[0] + ", " +p[1] + ", " + p[2]+")");
-                if(Math.abs(color[0] - p[0]) <=t && Math.abs(color[1] - p[1]) <=t && Math.abs(color[2] - p[2]) <=t){
-                    System.out.println("f");
+                if(color[0] == p[0] && color[1] == p[1] && color[2] == p[2]){
+                    System.out.println("cor==");
                     p[0] = 0;
-                    p[1] = 255;
-                    p[2] = 0;
-
-                }else{
-                    System.out.println("d");
-                    p[0] = 255;
                     p[1] = 0;
                     p[2] = 0;
-
+                    img.put(k,i,p);
                 }
-                img.put(k,i,p);
             }
         }
-        Bitmap btm = Bitmap.createBitmap(img.cols(), img.rows(), Bitmap.Config.ARGB_8888);
-        Utils.matToBitmap(img,btm);
-        originalImage = img;
-        return btm;
+        */
+        return img;
     }
     private void resize(int w, int h){
         Size sz = new Size(w,h);

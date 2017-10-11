@@ -12,7 +12,7 @@ import org.opencv.core.Mat;
 public class AplicationData extends Application {
     private Bitmap bitmapToProcess;
     private Mat matToProcess;
-    private double[] leafColor;
+    private float[] leafColor = {60,170,60};
 
 
     public Bitmap getBitmapToProcess() {
@@ -31,11 +31,11 @@ public class AplicationData extends Application {
         this.matToProcess = matToProcess;
     }
 
-    public double[] getLeafColor() {
+    public float[] getLeafColor() {
         return leafColor;
     }
 
-    public void setLeafColor(double[] leafColor) {
+    public void setLeafColor(float[] leafColor) {
         this.leafColor = leafColor;
     }
 }

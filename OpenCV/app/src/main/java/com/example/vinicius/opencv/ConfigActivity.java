@@ -65,8 +65,8 @@ public class ConfigActivity extends Activity implements OnTouchListener
         AplicationData app = (AplicationData) getApplicationContext();
         bitmap = app.getBitmapToProcess();
         Utils.bitmapToMat(bitmap,img);
-        Size sz = new Size(img.width()/10,img.height()/10);
-        Imgproc.resize(img,img,sz);
+        //Size sz = new Size(img.width(),img.height());
+        //Imgproc.resize(img,img,sz);
         Mat imgHsl = new Mat();
         //Imgproc.cvtColor(img,imgHsl,Imgproc.COLOR_RGB2HLS);
         //Imgproc.cvtColor(imgHsl,img,Imgproc.COLOR_HLS2RGB);
@@ -222,6 +222,10 @@ public class ConfigActivity extends Activity implements OnTouchListener
         return floodfilled;
     }
     private static Mat segmentByColor(Mat img,double[] color){
+        Imgproc.cvtColor(img,img,Imgproc.COLOR_RGB2HSV);
+        int sensitivity = 15;
+        Core.inRange(img,new Scalar(60 - sensitivity, 100, 100), new Scalar(60 + sensitivity, 255, 255),img);
+        /*
         System.out.println("segmentando..");
         for(int i=0;i<img.cols();i++){
             for(int k=0;k<img.rows();k++){
@@ -236,6 +240,7 @@ public class ConfigActivity extends Activity implements OnTouchListener
                 }
             }
         }
+        */
         return img;
     }
 
