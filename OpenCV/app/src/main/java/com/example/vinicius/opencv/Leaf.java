@@ -11,6 +11,7 @@ import org.opencv.core.Rect;
 import org.opencv.core.RotatedRect;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
+import org.opencv.core.TermCriteria;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.imgproc.Moments;
 
@@ -29,35 +30,18 @@ public class Leaf {
     private float[] leafColor;
     private Mat originalImage;
     private double leafArea;
-    private double leafWidth;
-    private double leafHeight;
+    private double deseaseArea;
 
     public Leaf(Bitmap image,float[] leafColor){
         this.leaf = new Mat();
         Utils.bitmapToMat(image,this.leaf);
         this.leafColor = leafColor;
         this.leafArea = 0;
-        this.leafHeight =0;
-        this.leafWidth =0;
-        resize(leaf.width()/10,leaf.height()/10);
+        this.deseaseArea =0;
+        //.resize(leaf.width()/10,leaf.height()/10);
         originalImage = leaf;
     }
 
-    public double getLeafHeight() {
-        return leafHeight;
-    }
-
-    public void setLeafHeight(int leafHeight) {
-        this.leafHeight = leafHeight;
-    }
-
-    public double getLeafWidth() {
-        return leafWidth;
-    }
-
-    public void setLeafWidth(int leafWidth) {
-        this.leafWidth = leafWidth;
-    }
 
     public double getLeafArea() {
         return leafArea;
@@ -127,7 +111,8 @@ public class Leaf {
             originalImage = removeBackground1(originalImage, leaf);
             long elapsed = System.currentTimeMillis() - start;
             System.out.println("tempo passado removebg:" +elapsed);
-            segmentByColor(leafColor, 20);
+            segmentByColor1(leafColor, 20);
+            //originalImage = segmentLeafAndDesease1(originalImage);
         }else {
             originalImage = leaf;
         }
@@ -136,6 +121,7 @@ public class Leaf {
 
             return out;
     }
+
     public ArrayList<Mat> splitIn4 (){
         ArrayList<Mat> leafSplited = new ArrayList<Mat>();
         Rect[] r = new Rect[4];
@@ -149,6 +135,7 @@ public class Leaf {
 
         return leafSplited;
     }
+
     public Mat concatSplitedLeaf(ArrayList<Mat> leafSplited){
         Mat hc1 = new Mat();
         Mat hc2 = new Mat();
@@ -166,6 +153,7 @@ public class Leaf {
         byte[] buff_simg = new byte[(int) (simg.total() * simg.channels())];
         simg.get(0, 0, buff_simg);
         byte[] buff_oimg = new byte[(int) (oimg.total() * oimg.channels())];
+        System.out.println(oimg.channels());
         oimg.get(0, 0, buff_oimg);
         int index_oimg=0;
         for(int i =0 ;i<buff_simg.length;i++){
@@ -174,18 +162,20 @@ public class Leaf {
                 buff_oimg[index_oimg]=  (byte) 0;
                 buff_oimg[index_oimg+1]=(byte) 0;
                 buff_oimg[index_oimg+2]=(byte) 0;
-                buff_oimg[index_oimg+3]=(byte) 0;
+                buff_oimg[index_oimg+3]=(byte) 255;
             }
             index_oimg+=4;
         }
         oimg.put(0, 0, buff_oimg);
         return oimg;
     }
+
     private Mat removeBackground2 (Mat oimg, Mat simg){
         Mat res = new Mat();
         Core.bitwise_and(oimg,simg,res);
         return oimg;
     }
+
     private Mat removeBackground (Mat oimg, Mat simg){
         //Codigo usando opencv MAT
         for(int c=0;c<simg.cols();c++){
@@ -205,6 +195,7 @@ public class Leaf {
 
         return oimg;
     }
+
     private int getNumBlackPixels(Mat l){
         int total =0;
         for(int c =0;c<l.cols() -1;c++){
@@ -217,6 +208,7 @@ public class Leaf {
         }
         return total;
     }
+
     public Bitmap segmentByColor(float[] color,int t){
 
         Mat img = originalImage;
@@ -250,14 +242,20 @@ public class Leaf {
         originalImage = hsv;
         return btm;
     }
+
     public Bitmap segmentByColor1(float[] color, int t){
         Mat img = originalImage;
         Mat hsv = new Mat();
+        Mat mat_leaf = new Mat();
+        Mat mat_desease = new Mat();
         Imgproc.cvtColor(img,hsv,Imgproc.COLOR_RGB2HSV_FULL);
         byte[] buff_img = new byte[(int) (hsv.total() * hsv.channels())];
+        byte[] buff_img_leaf = new byte[(int)hsv.total()];
+        byte[] buff_img_desease = new byte[(int)hsv.total()];
         hsv.get(0, 0, buff_img);
-
-
+        int area_leaf =0;
+        int area_desease =0;
+        int aux_i = 0;
         for(int i =0 ;i<buff_img.length;i+=3){
             //System.out.println("hsl("+(buff_img[i] & 0xFF) + ", " +(buff_img[i+1]&0xFF) + ", " + (buff_img[i+2]&0xFF)+")");
             if(buff_img[i] > (byte)color[0]-t && buff_img[i] < (byte)color[0]+t)
@@ -266,26 +264,43 @@ public class Leaf {
                 buff_img[i]=  (byte) 0;
                 buff_img[i+1]=(byte) 255;
                 buff_img[i+2]=(byte) 0;
+
+                buff_img_leaf[aux_i] =(byte) 255;
+                buff_img_desease[aux_i] = (byte)0;
+                area_leaf +=1;
             }else if( buff_img[i] == (byte)0 && buff_img[i+1] ==(byte)0 && buff_img[i+2] ==(byte)0)
             {
                // System.out.println("r");
                 buff_img[i]=  (byte) 255;
                 buff_img[i+1]=(byte) 255;
                 buff_img[i+2]=(byte) 255;
+
+                buff_img_leaf[aux_i] =(byte) 0;
+                buff_img_desease[aux_i] = (byte)0;
             }else{
                // System.out.println("r");
                 buff_img[i]=  (byte) 255;
                 buff_img[i+1]=(byte) 0;
                 buff_img[i+2]=(byte) 0;
+
+                buff_img_desease[aux_i] = (byte)255;
+                buff_img_leaf[aux_i] =(byte) 0;
+                area_desease+=1;
             }
+            aux_i +=1;
         }
+        leafArea = area_leaf;
+        deseaseArea = area_desease;
 
         hsv.put(0,0,buff_img);
+        mat_leaf.put(0,0,buff_img_leaf);
+        mat_desease.put(0,0,buff_img_desease);
         Bitmap btm = Bitmap.createBitmap(hsv.cols(), hsv.rows(), Bitmap.Config.ARGB_8888);
         Utils.matToBitmap(hsv,btm);
         originalImage = hsv;
         return btm;
     }
+
     public Mat segmentByColor2(float[] color){
         Mat img = originalImage;
         Imgproc.cvtColor(img,img,Imgproc.COLOR_RGB2HSV);
@@ -309,8 +324,32 @@ public class Leaf {
         */
         return img;
     }
+
     private void resize(int w, int h){
         Size sz = new Size(w,h);
         Imgproc.resize(leaf,leaf,sz);
+    }
+
+    public Mat segmentLeafAndDesease(Mat img){
+        Imgproc.cvtColor(img,img,Imgproc.COLOR_RGB2GRAY);
+        Imgproc.threshold(img, img, 1, 255, Imgproc.THRESH_OTSU);
+        return img;
+    }
+
+    public Mat segmentLeafAndDesease1(Mat img){
+        Mat hsv = new Mat();
+        Mat clusteredHSV = new Mat();
+        Imgproc.cvtColor(img,hsv,Imgproc.COLOR_RGB2HSV_FULL);
+        TermCriteria criteria = new TermCriteria(TermCriteria.EPS + TermCriteria.MAX_ITER,100,0.1);
+        Core.kmeans(hsv, 3, clusteredHSV, criteria, 10, Core.KMEANS_PP_CENTERS);
+        return clusteredHSV;
+    }
+
+    public double getDeseaseArea() {
+        return deseaseArea;
+    }
+
+    public void setDeseaseArea(double deseaseArea) {
+        this.deseaseArea = deseaseArea;
     }
 }

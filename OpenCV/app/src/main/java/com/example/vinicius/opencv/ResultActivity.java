@@ -41,7 +41,12 @@ public class ResultActivity extends AppCompatActivity {
         toast.show();
 
         TextView areaTextView  = (TextView)findViewById(R.id.areaTextView);
-        areaTextView.setText(leaf.getLeafArea() + " cm");
+        TextView areaTextView1 = (TextView)findViewById(R.id.areaTextView1);
+        TextView porcentagem = (TextView)findViewById(R.id.porcentagem);
+        areaTextView.setText(leaf.getLeafArea() + " px");
+        areaTextView1.setText(leaf.getDeseaseArea() + " px");
+        double t = leaf.getLeafArea()+leaf.getDeseaseArea();
+        porcentagem.setText("a folha esta " +(leaf.getDeseaseArea()*100)/t + "% com doença");
     }
 
 

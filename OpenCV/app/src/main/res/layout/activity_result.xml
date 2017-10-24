@@ -6,6 +6,93 @@
     android:layout_height="match_parent"
     tools:context="com.example.vinicius.opencv.ResultActivity">
 
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context="com.example.vinicius.opencv.ResultActivity">
+
+        <TextView
+            android:id="@+id/areaTextView1"
+            android:layout_width="91dp"
+            android:layout_height="20dp"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignTop="@+id/textView"
+            android:layout_toEndOf="@+id/textView"
+            android:text=""
+            tools:layout_editor_absoluteX="152dp"
+            tools:layout_editor_absoluteY="394dp" />
+
+        <TextView
+            android:id="@+id/textView3"
+            android:layout_width="wrap_content"
+            android:layout_height="20dp"
+            android:layout_alignLeft="@+id/image_view_result"
+            android:layout_alignStart="@+id/image_view_result"
+            android:layout_below="@+id/image_view_result"
+            android:layout_marginTop="39dp"
+            android:text=""
+            tools:layout_editor_absoluteX="16dp"
+            tools:layout_editor_absoluteY="20dp" />
+
+        <ImageView
+            android:id="@+id/image_view_result"
+            android:layout_width="236dp"
+            android:layout_height="350dp"
+            android:layout_centerHorizontal="true"
+            tools:layout_editor_absoluteX="42dp"
+            tools:layout_editor_absoluteY="16dp" />
+
+        <TextView
+            android:id="@+id/textView"
+            android:layout_width="wrap_content"
+            android:layout_height="20dp"
+            android:layout_alignLeft="@+id/textView3"
+            android:layout_alignStart="@+id/textView3"
+            android:layout_below="@+id/textView3"
+            android:layout_marginTop="14dp"
+            android:text="Area com doença: "
+            tools:layout_editor_absoluteX="16dp"
+            tools:layout_editor_absoluteY="20dp" />
+
+        <TextView
+            android:id="@+id/areaTextView"
+            android:layout_width="91dp"
+            android:layout_height="20dp"
+            android:text=""
+            tools:layout_editor_absoluteX="152dp"
+            tools:layout_editor_absoluteY="394dp"
+            android:layout_above="@+id/textView"
+            android:layout_toRightOf="@+id/textView"
+            android:layout_toEndOf="@+id/textView" />
+
+
+    </RelativeLayout>
+
+    <TextView
+        android:id="@+id/textView4"
+        android:layout_width="91dp"
+        android:layout_height="20dp"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignTop="@+id/textView"
+        android:layout_toEndOf="@+id/textView"
+        android:text=""
+        tools:layout_editor_absoluteX="152dp"
+        tools:layout_editor_absoluteY="394dp" />
+
+    <TextView
+        android:id="@+id/textView3"
+        android:layout_width="wrap_content"
+        android:layout_height="20dp"
+        android:layout_alignLeft="@+id/image_view_result"
+        android:layout_alignStart="@+id/image_view_result"
+        android:layout_below="@+id/image_view_result"
+        android:layout_marginTop="39dp"
+        android:text="Area saudavel: "
+        tools:layout_editor_absoluteX="16dp"
+        tools:layout_editor_absoluteY="20dp" />
+
     <ImageView
         android:id="@+id/image_view_result"
         android:layout_width="236dp"
@@ -15,28 +102,18 @@
         android:layout_centerHorizontal="true" />
 
     <TextView
-        android:id="@+id/textView"
+        android:id="@+id/porcentagem"
         android:layout_width="wrap_content"
         android:layout_height="20dp"
-        android:text="Area da folha: "
+        android:text=""
         tools:layout_editor_absoluteX="16dp"
         tools:layout_editor_absoluteY="20dp"
-        android:layout_below="@+id/image_view_result"
-        android:layout_alignLeft="@+id/image_view_result"
-        android:layout_alignStart="@+id/image_view_result"
-        android:layout_marginTop="39dp" />
+        android:layout_marginBottom="33dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignLeft="@+id/textView3"
+        android:layout_alignStart="@+id/textView3" />
 
-    <TextView
-        android:id="@+id/areaTextView"
-        android:layout_width="91dp"
-        android:layout_height="20dp"
-        android:text=""
-        tools:layout_editor_absoluteX="152dp"
-        tools:layout_editor_absoluteY="394dp"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true"
-        android:layout_alignTop="@+id/textView"
-        android:layout_toEndOf="@+id/textView" />
+
 
 
 
